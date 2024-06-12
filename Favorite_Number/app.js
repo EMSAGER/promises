@@ -1,6 +1,4 @@
 
-// let fiveNumberFacts = [];
-
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('numberForm');
     const numberInput = document.getElementById('number');
@@ -10,20 +8,31 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
         const number = numberInput.value;
         if (number) {
-            fetchNumberFact(number).then(data => {
-                resultDiv.textContent = data.text; // Display the fact
-            }).catch(error => {
-                resultDiv.textContent = 'Error: ' + error.msg; // Display the error message
-            });
+            fetchNumberFacts(number, 4)
+                .then(facts => {
+                    //displays the fact
+                    resultDiv.innerHTML = facts.map(fact => `<p>${fact.text}</p>`).join(''); 
+                })
+                .catch(error => {
+                    //displays the error message
+                    resultDiv.textContent = 'Error: ' + error.msg; 
+                });
         } else {
             resultDiv.textContent = 'Please enter a number!';
         }
     });
 });
 
-function fetchNumberFact(number) {
+function fetchNumberFacts(number, count) {
     const url = `http://numbersapi.com/${number}?json`;
-    return axios.get(url)
+    let numberFacts = [];
+    for (let i = 0; i < count; i++){
+        numberFacts.push(
+            axios.get(url, {
+                params: {
+                    json: true
+                }
+        })
         .then(response => {
             if (response.status >= 200 && response.status < 300) {
                 return response.data;
@@ -36,5 +45,7 @@ function fetchNumberFact(number) {
                 msg: error.message || 'Network Error',
                 status: error.response ? error.response.status : 'Network Error'
             };
-        });
-}
+        })
+        )};
+        return Promise.all(numberFacts);
+    }
