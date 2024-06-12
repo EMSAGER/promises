@@ -14,8 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (remainingCards > 0) {
             drawSingleCard();
         } else {
-            resultDiv.textContent = "No more cards left to draw!";
-            button.disabled = true;
+            returnCardsToDeck();
         }
     });
 
@@ -65,7 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
                remainingCards = drawRes.data.remaining;
                if (remainingCards === 0){
                 button.disabled = true;
-                //newshuffle();
                }
             }) 
             .catch(error => {
@@ -73,34 +71,31 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    function addToPile(cardCode){
+    function addToPile(cardCode) {
         const pileUrl = `https://deckofcardsapi.com/api/deck/${deckId}/pile/discard/add/?cards=${cardCode}`;
-
         axios.get(pileUrl)
-        .then(pileRes => {
-            if(!pileRes.data.success){
-                throw new Error('Failed to add card to pile!');
-            }
-            // console.log(`Card added to pile: ${cardCode}`);
-        })
-        .catch(error => {
-            console.error('Error adding card to pile:', error);
-        });
-        
-    // function newShuffle(){
-    //     // URL to shuffle a new deck
-    //     const shuffleUrl = 'https://deckofcardsapi.com/api/deck/new/';
-    //     axios.get(shuffleUrl)
-    //         .then(shuffleRes => {
-    //             if (!shuffleRes.data.success) {
-    //                 throw new Error('Failed to shuffle cards!');
-    //             }
-    //             //get the deck_id of the shuffled deck
-    //             deckId = shuffleRes.data.deck_id;
-    //             remainingCards = shuffleRes.data.remaining;
-    //         })
-    //         .catch(error => {
-    //             console.log ('Error during shuffle', error);
-    //         });
-    // }
-}})
+            .then(pileRes => {
+                if (!pileRes.data.success) {
+                    throw new Error('Failed to add card to pile!');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding card to pile:', error);
+            });
+    }
+
+    function returnCardsToDeck() {
+        const returnUrl = `https://deckofcardsapi.com/api/deck/${deckId}/pile/discard/return/`;
+        axios.get(returnUrl)
+            .then(returnRes => {
+                if (!returnRes.data.success) {
+                    throw new Error('Failed to return cards to deck!');
+                }
+                console.log('Cards returned to deck');
+                shuffleCards();
+            })
+            .catch(error => {
+                console.error('Error returning cards to deck:', error);
+            });
+    }
+});
