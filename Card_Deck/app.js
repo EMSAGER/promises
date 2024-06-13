@@ -1,5 +1,7 @@
 let deckId = null;
-let remainingCards = 52;
+
+const HANDSIZE = 52;
+let remainingCards = HANDSIZE;
 
 document.addEventListener('DOMContentLoaded', function() {
     const button = document.getElementById('button');
@@ -28,11 +30,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 //get the deck_id of the shuffled deck
                 deckId = shuffleRes.data.deck_id;
-                remainingCards = shuffleRes.data.remaining;
+                remainingCards = HANDSIZE;
+                //going through the document & getting class images & turn into an array to be fr
+                Array.from(document.getElementsByClassName("card-source")).forEach(x => x.remove());
             })
             .catch(error => {
                 console.log ('Error during shuffle', error);
             });
+    }
+
+    function returnCardsToDeck() {
+        // const returnUrl = `https://deckofcardsapi.com/api/deck/${deckId}/pile/discard/return/`;
+        // axios.get(returnUrl)
+        //     .then(returnRes => {
+        //         if (!returnRes.data.success) {
+        //             throw new Error('Failed to return cards to deck!');
+        //         }
+        //         console.log('Cards returned to deck');
+        //         shuffleCards();
+        //     })
+        //     .catch(error => {
+        //         console.error('Error returning cards to deck:', error);
+        //     });
+        shuffleCards();
+        button.innerText = "Draw Card!";
     }
 
     function drawSingleCard() {
@@ -44,7 +65,8 @@ document.addEventListener('DOMContentLoaded', function() {
         axios.get(drawUrl)
             .then(drawRes => {
                 if (!drawRes.data.success) {
-                    throw new Error('Failed to draw a card!');
+                    console.log("no more cards!");
+                    returnCardsToDeck();
                 }
                const card = drawRes.data.cards[0];
                const cardText = `${card.value.toLowerCase()} of ${card.suit.toLowerCase()}`;
@@ -54,16 +76,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
                pile.innerHTML += `
                
-                   <img src="${cardImage}" alt="Card Image" style="transform: rotate(${Math.random() * 20 - 10}deg);">
+                   <img src="${cardImage}" alt="Card Image" class="card-source" style="transform: rotate(${Math.random() * 20 - 10}deg);">
                
            `;
                 //adding the card to the discard pile
                 addToPile(card.code);
 
                //if cards are remaining, draw the next card
-               remainingCards = drawRes.data.remaining;
+               remainingCards --;
                if (remainingCards === 0){
-                button.disabled = true;
+                button.innerText = "Reshuffle";
                }
             }) 
             .catch(error => {
@@ -84,18 +106,5 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    function returnCardsToDeck() {
-        const returnUrl = `https://deckofcardsapi.com/api/deck/${deckId}/pile/discard/return/`;
-        axios.get(returnUrl)
-            .then(returnRes => {
-                if (!returnRes.data.success) {
-                    throw new Error('Failed to return cards to deck!');
-                }
-                console.log('Cards returned to deck');
-                shuffleCards();
-            })
-            .catch(error => {
-                console.error('Error returning cards to deck:', error);
-            });
-    }
+    
 });
